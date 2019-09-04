@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import datetime
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,12 +32,16 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'Kibandaski.apps.authentication',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+
+    'rest_email_auth',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +54,44 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}
+
+AUTHENTICATION_BACKENDS = [
+'rest_email_auth.authentication.VerifiedEmailBackend',
+'django.contrib.auth.backends.ModelBackend',
+]
+
+
+REST_EMAIL_AUTH = {
+'EMAIL_VERIFICATION_URL': 'http://127.0.0.1:8000/verify/{key}',
+'PASSWORD_RESET_URL': 'http://127.0.0.1:8000/reset/{key}',
+}
+
+# REST_EMAIL_AUTH = {
+# 'EMAIL_VERIFICATION_URL': 'http://127.0.0.1:8000/verify/{key}'
+# }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
+
+
+
+JWT_AUTH = {
+    'JWT_VERIFY': True,
+    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=30000),
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+}
+
+AUTH_USER_MODEL = "authentication.User"
 ROOT_URLCONF = 'Kibandaski.urls'
 
 TEMPLATES = [
@@ -75,8 +118,12 @@ WSGI_APPLICATION = 'Kibandaski.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ['NAME'],
+        'USER': os.environ['USER'],
+        'HOST': os.environ['HOST'],
+        'PASSWORD': os.environ['PASSWORD'],
+        'PORT': os.environ['PORT']
     }
 }
 
